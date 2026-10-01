@@ -1,0 +1,41 @@
+name: Awesome Multi-Agent Orchestrators CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-build:
+    name: Test and Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Syntax check scripts
+        run: |
+          node --check scripts/fetch-github-stars.mjs
+          node --check scripts/fetch-github-stars.test.mjs
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit test suite
+        run: npm test
+
+      - name: Build Astro production site
+        run: npm run build
+
+      - name: Verify build artifacts
+        run: |
+          test -f dist/index.html && echo "Verified dist/index.html generated successfully."
+          test -f dist/sitemap.xml && echo "Verified dist/sitemap.xml generated successfully."
